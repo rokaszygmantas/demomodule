@@ -1,0 +1,8 @@
+services:
+  prestashop.module.demovieworderhooks.repository.order_repository:
+    class: PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository
+
+  prestashop.module.demovieworderhooks.presenter.orders_presenter:
+    class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter
+    arguments:
+      - '@router.default'

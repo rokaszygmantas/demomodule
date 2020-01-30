@@ -24,16 +24,38 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-class DemoModule extends Module
-{
-    public function __construct()
-    {
-        $this->name = 'demomodule';
-        $this->author = 'PrestaShop';
-        $this->version = '1.0.0';
-        $this->displayName = 'Demo module demonstrating new features in PrestaShop 1.7.7';
-        $this->ps_versions_compliancy = ['min' => '1.7.7.0', 'max' => _PS_VERSION_];
+declare(strict_types=1);
 
-        parent::__construct();
+namespace PrestaShop\Module\DemoViewOrderHooks\Repository;
+
+use DateTimeImmutable;
+use Order as PrestaShopOrder;
+use PrestaShop\Module\DemoViewOrderHooks\Collection\Orders;
+use PrestaShop\Module\DemoViewOrderHooks\DTO\Order;
+
+class OrderRepository
+{
+    /**
+     * Get all orders that a customer has placed.
+     */
+    public function getCustomerOrders(int $customerId, array $excludeOrderIds = []): Orders
+    {
+        $orders = PrestaShopOrder::getCustomerOrders($customerId);
+        $ordersCollection = new Orders();
+
+        foreach ($orders as $order) {
+            if (in_array($order['id_order'], $excludeOrderIds)) {
+                continue;
+            }
+
+            $ordersCollection->add(new Order(
+                (int) $order['id_order'],
+                $order['reference'],
+                (int) $order['current_state'],
+                new DateTimeImmutable($order['date_add'])
+            ));
+        }
+
+        return $ordersCollection;
     }
 }

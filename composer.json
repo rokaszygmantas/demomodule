@@ -1,0 +1,15 @@
+{
+    "name": "prestashop/demovieworderhooks",
+    "authors": [
+        {
+            "name": "Rokas Zygmantas",
+            "email": "rokas.zygmantas@invertus.eu"
+        }
+    ],
+    "require": {},
+    "autoload": {
+      "psr-4": {
+        "PrestaShop\\Module\\DemoViewOrderHooks\\": "src/"
+      }
+    }
+}
