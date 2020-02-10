@@ -29,9 +29,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\DemoViewOrderHooks\Install;
 
 use Db;
-use Doctrine\ORM\EntityManagerInterface;
 use Module;
-use PrestaShop\Module\DemoViewOrderHooks\Entity\Signature;
 
 /**
  * Class responsible for modifications needed during installation/uninstallation of the module.
@@ -39,13 +37,13 @@ use PrestaShop\Module\DemoViewOrderHooks\Entity\Signature;
 class Installer
 {
     /**
-     * @var EntityManagerInterface
+     * @var FixturesInstaller
      */
-    private $entityManager;
+    private $fixturesInstaller;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(FixturesInstaller $fixturesInstaller)
     {
-        $this->entityManager = $entityManager;
+        $this->fixturesInstaller = $fixturesInstaller;
     }
 
     /**
@@ -65,7 +63,7 @@ class Installer
             return false;
         }
 
-        $this->installDemoData();
+        $this->fixturesInstaller->install();
 
         return true;
     }
@@ -95,6 +93,15 @@ class Installer
 			  PRIMARY KEY (`id_signature`),
 			  UNIQUE KEY (`id_order`)
 			) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
+
+            'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'order_review` (
+			  `id_order_review` int(11) NOT NULL AUTO_INCREMENT,
+			  `id_order` int(11) NOT NULL,
+			  `score` int(11) NOT NULL,
+			  `comment` text DEFAULT NULL,
+			  PRIMARY KEY (`id_order_review`),
+			  UNIQUE KEY (`id_order`)
+			) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
         ];
 
         return $this->executeQueries($queries);
@@ -109,6 +116,7 @@ class Installer
     {
         $queries = [
             'DROP TABLE IF EXISTS `'._DB_PREFIX_.'signature`',
+            'DROP TABLE IF EXISTS `'._DB_PREFIX_.'order_review`',
         ];
 
         return $this->executeQueries($queries);
@@ -155,20 +163,5 @@ class Installer
         }
 
         return true;
-    }
-
-    /**
-     * Installs fictional data that the module uses.
-     */
-    private function installDemoData(): void
-    {
-        $signature = new Signature();
-        $signature
-            ->setFilename('john_doe.png')
-            ->setOrderId(1)
-        ;
-
-        $this->entityManager->persist($signature);
-        $this->entityManager->flush();
     }
 }

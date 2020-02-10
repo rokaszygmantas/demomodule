@@ -28,9 +28,12 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
 
+use Currency;
+use Order as PrestashopOrder;
 use OrderState;
 use PrestaShop\Module\DemoViewOrderHooks\Collection\Orders;
 use PrestaShop\Module\DemoViewOrderHooks\DTO\Order;
+use PrestaShop\PrestaShop\Core\Localization\Locale;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class OrdersPresenter
@@ -40,9 +43,15 @@ class OrdersPresenter
      */
     private $urlGenerator;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    /**
+     * @var Locale
+     */
+    private $locale;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator, Locale $locale)
     {
         $this->urlGenerator = $urlGenerator;
+        $this->locale = $locale;
     }
 
     /**
@@ -56,6 +65,7 @@ class OrdersPresenter
 
         /** @var Order $order */
         foreach ($orders as $order) {
+            $prestashopOrder = new PrestashopOrder($order->getOrderId());
             $orderState = new OrderState($order->getOrderStateId(), $languageId);
             $presented[] = [
                 'id' => $order->getOrderId(),
@@ -68,6 +78,10 @@ class OrdersPresenter
                     'color' => $orderState->color
                 ],
                 'placedAt' => $order->getOrderDate(),
+                'totalPaid' => $this->locale->formatPrice(
+                    $prestashopOrder->getOrdersTotalPaid(),
+                    Currency::getIsoCodeById((int) $prestashopOrder->id_currency)
+                ),
             ];
         }
 

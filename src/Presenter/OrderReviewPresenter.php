@@ -1,4 +1,5 @@
-{#**
+<?php
+/**
  * 2007-2020 PrestaShop SA and Contributors
  *
  * NOTICE OF LICENSE
@@ -21,21 +22,21 @@
  * @copyright 2007-2020 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
- *#}
+ */
 
-{% extends '@Modules/demovieworderhooks/views/templates/admin/card.html.twig' %}
+declare(strict_types=1);
 
-{% block card_title %}
-  {{ 'Signature'|trans }}
-{% endblock %}
+namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
 
-{% block card_body %}
-  <div class="col-lg">
-    <div class="display-4 text-center">
-      {{ signature.gender }} {{ signature.firstName }} {{ signature.lastName }}
-    </div>
-    <div class="text-center">
-      <img src="{{ signature.filename }}" alt="">
-    </div>
-  </div>
-{% endblock %}
+use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
+
+class OrderReviewPresenter
+{
+    public function present(OrderReview $orderReview): array
+    {
+        return [
+            'comment' => $orderReview->getComment(),
+            'score' => $orderReview->getScore(),
+        ];
+    }
+}

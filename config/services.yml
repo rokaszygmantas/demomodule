@@ -17,17 +17,32 @@ services:
     arguments:
       - PrestaShop\Module\DemoViewOrderHooks\Entity\Signature
 
+  prestashop.module.demovieworderhooks.repository.order_review_repository:
+    class: PrestaShop\Module\DemoViewOrderHooks\Repository\OrderReviewRepository
+    factory: ['@doctrine.orm.default_entity_manager', getRepository]
+    arguments:
+      - PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview
+
   prestashop.module.demovieworderhooks.presenter.orders_presenter:
     class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter
     arguments:
       - '@router.default'
+      - '@prestashop.core.localization.locale.context_locale'
 
   prestashop.module.demovieworderhooks.presenter.signature_presenter:
     class: PrestaShop\Module\DemoViewOrderHooks\Presenter\SignaturePresenter
     arguments:
       - '@=service("prestashop.module.demovieworderhooks").getPathUri() ~ parameter("signatureImgDirectory")'
 
+  prestashop.module.demovieworderhooks.presenter.order_review_presenter:
+    class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderReviewPresenter
+
   prestashop.module.demovieworderhooks.install.installer:
     class: PrestaShop\Module\DemoViewOrderHooks\Install\Installer
+    arguments:
+      - '@prestashop.module.demovieworderhooks.install.fixtures_installer'
+
+  prestashop.module.demovieworderhooks.install.fixtures_installer:
+    class: PrestaShop\Module\DemoViewOrderHooks\Install\FixturesInstaller
     arguments:
       - '@doctrine.orm.entity_manager'

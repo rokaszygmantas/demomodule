@@ -27,9 +27,11 @@
 declare(strict_types=1);
 
 use PrestaShop\Module\DemoViewOrderHooks\Install\Installer;
+use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderReviewPresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\SignaturePresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository;
+use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderReviewRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository;
 
 class DemoViewOrderHooks extends Module
@@ -66,25 +68,25 @@ class DemoViewOrderHooks extends Module
     }
 
     /**
-     * Displays other orders from the same customer in a block.
+     * Displays customer's signature.
      */
     public function hookDisplayBackOfficeOrderActions(array $params)
     {
-        /** @var OrderRepository $orderRepository */
-        $orderRepository = $this->get('prestashop.module.demovieworderhooks.repository.order_repository');
+        /** @var SignatureRepository $signatureRepository */
+        $signatureRepository = $this->get('prestashop.module.demovieworderhooks.repository.signature_repository');
 
-        /** @var OrdersPresenter $ordersPresenter */
-        $ordersPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.orders_presenter');
+        /** @var SignaturePresenter $signaturePresenter */
+        $signaturePresenter = $this->get('prestashop.module.demovieworderhooks.presenter.signature_presenter');
 
-        $order = new Order($params['id_order']);
+        $signature = $signatureRepository->findOneBy(['orderId' => $params['id_order']]);
 
-        return $this->render($this->getModuleTemplatePath() . 'customer_orders.html.twig', [
-            'currentOrderId' => (int) $params['id_order'],
-            'orders' => $ordersPresenter->present(
-                // Get all customer orders except currently viewed order
-                $orderRepository->getCustomerOrders((int) $order->id_customer, [$order->id]),
-                (int) $this->context->language->id
-            ),
+        if (!$signature) {
+            return '';
+        }
+
+        // customers signature
+        return $this->render($this->getModuleTemplatePath() . 'customer_signature.html.twig', [
+            'signature' => $signaturePresenter->present($signature, (int) $this->context->language->id),
         ]);
     }
 
@@ -111,29 +113,48 @@ class DemoViewOrderHooks extends Module
         return 'displayAdminOrderMain';
     }
 
+    /**
+     * Displays customer's review about the order.
+     */
     public function hookDisplayAdminOrderSide(array $params)
     {
-        // customer statisfaction
-        return 'displayAdminOrderSide';
-    }
+        /** @var OrderReviewRepository $orderReviewRepository */
+        $orderReviewRepository = $this->get('prestashop.module.demovieworderhooks.repository.order_review_repository');
 
-    public function hookDisplayAdminOrder(array $params)
-    {
-        /** @var SignatureRepository $signatureRepository */
-        $signatureRepository = $this->get('prestashop.module.demovieworderhooks.repository.signature_repository');
+        /** @var OrderReviewPresenter $orderReviewPresenter */
+        $orderReviewPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.order_review_presenter');
 
-        /** @var SignaturePresenter $signaturePresenter */
-        $signaturePresenter = $this->get('prestashop.module.demovieworderhooks.presenter.signature_presenter');
+        $orderReview = $orderReviewRepository->findOneBy(['orderId' => $params['id_order']]);
 
-        $signature = $signatureRepository->findOneBy(['orderId' => $params['id_order']]);
-
-        if (!$signature) {
+        if (!$orderReview) {
             return '';
         }
 
-        // customers signature
-        return $this->render($this->getModuleTemplatePath() . 'customer_signature.html.twig', [
-            'signature' => $signaturePresenter->present($signature, (int) $this->context->language->id),
+        return $this->render($this->getModuleTemplatePath() . 'customer_satisfaction.html.twig', [
+            'orderReview' => $orderReviewPresenter->present($orderReview),
+        ]);
+    }
+
+    /**
+     * Displays other orders from the same customer in a block.
+     */
+    public function hookDisplayAdminOrder(array $params)
+    {
+        /** @var OrderRepository $orderRepository */
+        $orderRepository = $this->get('prestashop.module.demovieworderhooks.repository.order_repository');
+
+        /** @var OrdersPresenter $ordersPresenter */
+        $ordersPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.orders_presenter');
+
+        $order = new Order($params['id_order']);
+
+        return $this->render($this->getModuleTemplatePath() . 'customer_orders.html.twig', [
+            'currentOrderId' => (int) $params['id_order'],
+            'orders' => $ordersPresenter->present(
+            // Get all customer orders except currently viewed order
+                $orderRepository->getCustomerOrders((int) $order->id_customer, [$order->id]),
+                (int) $this->context->language->id
+            ),
         ]);
     }
 
