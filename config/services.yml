@@ -1,8 +1,33 @@
+parameters:
+  signatureImgDirectory: 'signatures/'
+
 services:
+  prestashop.module.demovieworderhooks:
+    class: DemoViewOrderHooks
+    factory: [Module, getInstanceByName]
+    arguments:
+      - 'demovieworderhooks'
+
   prestashop.module.demovieworderhooks.repository.order_repository:
     class: PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository
+
+  prestashop.module.demovieworderhooks.repository.signature_repository:
+    class: PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository
+    factory: ['@doctrine.orm.default_entity_manager', getRepository]
+    arguments:
+      - PrestaShop\Module\DemoViewOrderHooks\Entity\Signature
 
   prestashop.module.demovieworderhooks.presenter.orders_presenter:
     class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter
     arguments:
       - '@router.default'
+
+  prestashop.module.demovieworderhooks.presenter.signature_presenter:
+    class: PrestaShop\Module\DemoViewOrderHooks\Presenter\SignaturePresenter
+    arguments:
+      - '@=service("prestashop.module.demovieworderhooks").getPathUri() ~ parameter("signatureImgDirectory")'
+
+  prestashop.module.demovieworderhooks.install.installer:
+    class: PrestaShop\Module\DemoViewOrderHooks\Install\Installer
+    arguments:
+      - '@doctrine.orm.entity_manager'

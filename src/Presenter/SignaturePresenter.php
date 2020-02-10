@@ -26,57 +26,35 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\Module\DemoViewOrderHooks\DTO;
+namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
 
-use DateTimeImmutable;
+use Gender;
+use Order;
+use PrestaShop\Module\DemoViewOrderHooks\Entity\Signature;
 
-final class Order
+class SignaturePresenter
 {
-    /**
-     * @var int
-     */
-    private $orderId;
-
     /**
      * @var string
      */
-    private $reference;
+    private $signatureImgDir;
 
-    /**
-     * @var int
-     */
-    private $orderStateId;
-
-    /**
-     * @var DateTimeImmutable
-     */
-    private $orderDate;
-
-    public function __construct(int $orderId, string $reference, int $orderStateId, DateTimeImmutable $orderDate)
+    public function __construct(string $signatureImgDir)
     {
-        $this->orderId = $orderId;
-        $this->reference = $reference;
-        $this->orderStateId = $orderStateId;
-        $this->orderDate = $orderDate;
+        $this->signatureImgDir = $signatureImgDir;
     }
 
-    public function getOrderId(): int
+    public function present(Signature $signature, int $languageId): array
     {
-        return $this->orderId;
-    }
+        $order = new Order($signature->getOrderId());
+        $customer = $order->getCustomer();
+        $gender = new Gender($customer->id_gender, $languageId);
 
-    public function getReference(): string
-    {
-        return $this->reference;
-    }
-
-    public function getOrderStateId(): int
-    {
-        return $this->orderStateId;
-    }
-
-    public function getOrderDate(): DateTimeImmutable
-    {
-        return $this->orderDate;
+        return [
+            'firstName' => $customer->firstname,
+            'lastName' => $customer->lastname,
+            'gender' => $gender->name,
+            'filename' => $this->signatureImgDir.$signature->getFilename()
+        ];
     }
 }

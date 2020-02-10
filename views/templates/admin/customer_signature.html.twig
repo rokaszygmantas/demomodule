@@ -26,40 +26,18 @@
 {% extends '@Modules/demovieworderhooks/views/templates/admin/card.html.twig' %}
 
 {% block card_title %}
-  {{ 'Other orders from this customer'|trans }}
+  {{ 'Customer\'s signature'|trans }}
 {% endblock %}
 
 {% block card_body %}
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>{{ 'Reference'|trans }}</th>
-          <th>{{ 'Status'|trans }}</th>
-          <th>{{ 'Placed at'|trans }}</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for order in orders %}
-        <tr>
-          <td>
-            <a href="{{ order.link }}">
-              {{ order.reference }}
-            </a>
-          </td>
-          <td>
-          <span class="badge rounded"
-                style="background-color: {{ order.status.color }}; color: {{ is_color_bright(order.status.color) ? 'black' : 'white' }};"
-          >
-            {{ order.status.name }}
-          </span>
-          </td>
-          <td class="text-right">
-            {{ order.placedAt|date_format_full }}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+  <div class="col-lg">
+    <div class="row">
+      <div class="col-lg display-4">
+        {{ signature.gender }} {{ signature.firstName }} {{ signature.lastName }}
+      </div>
+      <div class="col-lg">
+        <img src="{{ signature.filename }}" alt="">
+      </div>
+    </div>
   </div>
 {% endblock %}

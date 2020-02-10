@@ -26,8 +26,11 @@
 
 declare(strict_types=1);
 
+use PrestaShop\Module\DemoViewOrderHooks\Install\Installer;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter;
+use PrestaShop\Module\DemoViewOrderHooks\Presenter\SignaturePresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository;
+use PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository;
 
 class DemoViewOrderHooks extends Module
 {
@@ -44,21 +47,22 @@ class DemoViewOrderHooks extends Module
 
     public function install()
     {
-        // All hooks in the order view page.
-        $hooks = [
-            'displayBackOfficeOrderActions',
-            'displayAdminOrderContentOrder',
-            'displayAdminOrderTabContent',
-            'displayAdminOrderTabLink',
-            'displayAdminOrderMain',
-            'displayAdminOrderSide',
-            'displayAdminOrder',
-            'displayAdminOrderTop',
-            'actionGetAdminOrderButtons',
-        ];
+        if (!parent::install()) {
+            return false;
+        }
 
-        return parent::install() &&
-            $this->registerHook($hooks);
+        /** @var Installer $installer */
+        $installer = $this->get('prestashop.module.demovieworderhooks.install.installer');
+
+        return $installer->install($this);
+    }
+
+    public function uninstall()
+    {
+        /** @var Installer $installer */
+        $installer = $this->get('prestashop.module.demovieworderhooks.install.installer');
+
+        return $installer->uninstall() && parent::uninstall();
     }
 
     /**
@@ -74,7 +78,7 @@ class DemoViewOrderHooks extends Module
 
         $order = new Order($params['id_order']);
 
-        return $this->render("@Modules/$this->name/views/templates/admin/customer_orders.html.twig", [
+        return $this->render($this->getModuleTemplatePath() . 'customer_orders.html.twig', [
             'currentOrderId' => (int) $params['id_order'],
             'orders' => $ordersPresenter->present(
                 // Get all customer orders except currently viewed order
@@ -115,8 +119,22 @@ class DemoViewOrderHooks extends Module
 
     public function hookDisplayAdminOrder(array $params)
     {
+        /** @var SignatureRepository $signatureRepository */
+        $signatureRepository = $this->get('prestashop.module.demovieworderhooks.repository.signature_repository');
+
+        /** @var SignaturePresenter $signaturePresenter */
+        $signaturePresenter = $this->get('prestashop.module.demovieworderhooks.presenter.signature_presenter');
+
+        $signature = $signatureRepository->findOneBy(['orderId' => $params['id_order']]);
+
+        if (!$signature) {
+            return '';
+        }
+
         // customers signature
-        return 'displayAdminOrder';
+        return $this->render($this->getModuleTemplatePath() . 'customer_signature.html.twig', [
+            'signature' => $signaturePresenter->present($signature, (int) $this->context->language->id),
+        ]);
     }
 
     public function hookDisplayAdminOrderTop(array $params)
@@ -140,5 +158,13 @@ class DemoViewOrderHooks extends Module
         $twig = $this->get('twig');
 
         return $twig->render($template, $params);
+    }
+
+    /**
+     * Get path to this module's template directory
+     */
+    private function getModuleTemplatePath(): string
+    {
+        return "@Modules/$this->name/views/templates/admin/";
     }
 }
