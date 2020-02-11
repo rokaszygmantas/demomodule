@@ -28,11 +28,12 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\DemoViewOrderHooks\Install;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Configuration;
+use Country;
+use DateTime;
+use Db;
 use joshtronic\LoremIpsum;
 use Order;
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
-use PrestaShop\Module\DemoViewOrderHooks\Entity\Signature;
 
 /**
  * Installs data fixtures for the module.
@@ -40,35 +41,70 @@ use PrestaShop\Module\DemoViewOrderHooks\Entity\Signature;
 class FixturesInstaller
 {
     /**
-     * @var EntityManagerInterface
+     * @var LoremIpsum
      */
-    private $entityManager;
+    private $loremIpsum;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    /**
+     * @var Db
+     */
+    private $db;
+
+    public function __construct(Db $db)
     {
-        $this->entityManager = $entityManager;
+        $this->loremIpsum = new LoremIpsum();
+        $this->db = $db;
     }
 
     public function install(): void
     {
         $orderIds = Order::getOrdersIdByDate('2000-01-01', '2100-01-01');
-        $loremIpsum = new LoremIpsum();
 
         foreach ($orderIds as $orderId) {
-            $signature = new Signature();
-            $signature->setFilename('john_doe.png')
-                ->setOrderId($orderId);
+            $this->insertSignature($orderId);
+            $this->insertOrderReview($orderId);
 
-            $this->entityManager->persist($signature);
+            $order = new Order($orderId);
 
-            $orderReview = new OrderReview();
-            $orderReview->setOrderId($orderId)
-                ->setScore(rand(0, 3))
-                ->setComment($loremIpsum->sentence());
-
-            $this->entityManager->persist($orderReview);
+            if ($order->hasBeenShipped()) {
+                $this->insertPackageLocations($orderId);
+            }
         }
+    }
 
-        $this->entityManager->flush();
+    private function insertOrderReview(int $orderId): void
+    {
+        $this->db->insert('order_review', [
+            'id_order' => $orderId,
+            'score' => rand(0, 3),
+            'comment' => $this->loremIpsum->sentence(),
+        ]);
+    }
+
+    private function insertSignature(int $orderId): void
+    {
+        $this->db->insert('signature', [
+            'id_order' => $orderId,
+            'filename' => 'john_doe.png',
+        ]);
+    }
+
+    private function insertPackageLocations(int $orderId): void
+    {
+        $numberOfLocations = rand(4, 6);
+        $countries = Country::getCountries(Configuration::get('PS_LANG_DEFAULT'));
+        $numberOfCountries = count($countries);
+
+        for ($i = 0; $i < $numberOfLocations; $i++) {
+            // Last location will not have a date
+            $date = $i === 0 ? null : (new DateTime('-'.$i.' days'))->format('Y-m-d H:i:s');
+
+            $this->db->insert('package_location', [
+                'id_order' => $orderId,
+                'location' => $countries[rand(0, $numberOfCountries - 1)]['name'],
+                'position' => $numberOfLocations - $i,
+                'date' => $date,
+            ]);
+        }
     }
 }

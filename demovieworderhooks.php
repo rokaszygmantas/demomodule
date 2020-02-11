@@ -26,12 +26,15 @@
 
 declare(strict_types=1);
 
-use PrestaShop\Module\DemoViewOrderHooks\Install\Installer;
+use PrestaShop\Module\DemoViewOrderHooks\Install\InstallerFactory;
+use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderLinkPresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderReviewPresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter;
+use PrestaShop\Module\DemoViewOrderHooks\Presenter\PackageLocationsPresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Presenter\SignaturePresenter;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderReviewRepository;
+use PrestaShop\Module\DemoViewOrderHooks\Repository\PackageLocationRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository;
 
 class DemoViewOrderHooks extends Module
@@ -53,16 +56,14 @@ class DemoViewOrderHooks extends Module
             return false;
         }
 
-        /** @var Installer $installer */
-        $installer = $this->get('prestashop.module.demovieworderhooks.install.installer');
+        $installer = InstallerFactory::create();
 
         return $installer->install($this);
     }
 
     public function uninstall()
     {
-        /** @var Installer $installer */
-        $installer = $this->get('prestashop.module.demovieworderhooks.install.installer');
+        $installer = InstallerFactory::create();
 
         return $installer->uninstall() && parent::uninstall();
     }
@@ -84,7 +85,6 @@ class DemoViewOrderHooks extends Module
             return '';
         }
 
-        // customers signature
         return $this->render($this->getModuleTemplatePath() . 'customer_signature.html.twig', [
             'signature' => $signaturePresenter->present($signature, (int) $this->context->language->id),
         ]);
@@ -95,16 +95,33 @@ class DemoViewOrderHooks extends Module
         return 'displayAdminOrderContentOrder';
     }
 
+    /**
+     * Display shipment tracking information.
+     */
     public function hookDisplayAdminOrderTabContent(array $params)
     {
-        // shipping tracking
-        return 'displayAdminOrderTabContent';
+        /** @var PackageLocationRepository $locationRepository */
+        $locationRepository = $this->get('prestashop.module.demovieworderhooks.repository.package_location_repository');
+
+        $locations = $locationRepository->findBy(
+            ['orderId' => $params['id_order']],
+            ['position' => 'asc']
+        );
+
+        /** @var PackageLocationsPresenter $locationsPresenter */
+        $locationsPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.package_locations_presenter');
+
+        return $this->render($this->getModuleTemplatePath() . 'tracking.html.twig', [
+            'packageLocations' => $locationsPresenter->present($locations),
+        ]);
     }
 
+    /**
+     * Display tracking tab link.
+     */
     public function hookDisplayAdminOrderTabLink(array $params)
     {
-        // shipping tracking
-        return 'displayAdminOrderTabLink';
+        return $this->render($this->getModuleTemplatePath() . 'tracking_link.html.twig');
     }
 
     public function hookDisplayAdminOrderMain(array $params)
@@ -158,10 +175,24 @@ class DemoViewOrderHooks extends Module
         ]);
     }
 
+    /**
+     * Displays previous/next order buttons.
+     */
     public function hookDisplayAdminOrderTop(array $params)
     {
-        // next/previous order buttons
-        return 'displayAdminOrderTop';
+        /** @var OrderRepository $orderRepository */
+        $orderRepository = $this->get('prestashop.module.demovieworderhooks.repository.order_repository');
+
+        /** @var OrderLinkPresenter $orderLinkPresenter */
+        $orderLinkPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.order_link_presenter');
+
+        $nextOrderId = $orderRepository->getNextOrderId((int) $params['id_order']);
+        $previousOrderId = $orderRepository->getPreviousOrderId((int) $params['id_order']);
+
+        return $this->render($this->getModuleTemplatePath() . 'order_navigation.html.twig', [
+            'previousOrder' => $orderLinkPresenter->present($previousOrderId),
+            'nextOrder' => $orderLinkPresenter->present($nextOrderId),
+        ]);
     }
 
     public function hookActionGetAdminOrderButtons(array $params)

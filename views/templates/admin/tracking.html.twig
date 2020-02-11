@@ -1,5 +1,4 @@
-<?php
-/**
+{#**
  * 2007-2020 PrestaShop SA and Contributors
  *
  * NOTICE OF LICENSE
@@ -22,21 +21,40 @@
  * @copyright 2007-2020 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
- */
+ *#}
 
-declare(strict_types=1);
+{% trans_default_domain 'Module.Demovieworderhooks.Admin' %}
 
-namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
-
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
-
-class OrderReviewPresenter
-{
-    public function present(OrderReview $orderReview): array
-    {
-        return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
-        ];
-    }
-}
+<div class="tab-pane fade show active" id="trackingTabContent" role="tabpanel" aria-labelledby="trackingTab">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>{{ 'Location'|trans }}</th>
+        <th>{{ 'Arrival date'|trans }}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% if packageLocations is empty %}
+      <tr>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+    {% else %}
+      {% for packageLocation in packageLocations %}
+        <tr>
+          <td>{{ packageLocation.location }}</td>
+          <td>
+            {% if not packageLocation.hasArrived %}
+              <span class="badge badge-danger">
+              {{ packageLocation.date }}
+              </span>
+            {% else %}
+              {{ packageLocation.date }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+</div>

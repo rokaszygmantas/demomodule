@@ -23,6 +23,12 @@ services:
     arguments:
       - PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview
 
+  prestashop.module.demovieworderhooks.repository.package_location_repository:
+    class: PrestaShop\Module\DemoViewOrderHooks\Repository\PackageLocationRepository
+    factory: ['@doctrine.orm.default_entity_manager', getRepository]
+    arguments:
+      - PrestaShop\Module\DemoViewOrderHooks\Entity\PackageLocation
+
   prestashop.module.demovieworderhooks.presenter.orders_presenter:
     class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrdersPresenter
     arguments:
@@ -37,12 +43,12 @@ services:
   prestashop.module.demovieworderhooks.presenter.order_review_presenter:
     class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderReviewPresenter
 
-  prestashop.module.demovieworderhooks.install.installer:
-    class: PrestaShop\Module\DemoViewOrderHooks\Install\Installer
-    arguments:
-      - '@prestashop.module.demovieworderhooks.install.fixtures_installer'
+  prestashop.module.demovieworderhooks.presenter.package_locations_presenter:
+    class: PrestaShop\Module\DemoViewOrderHooks\Presenter\PackageLocationsPresenter
+    calls:
+      - { method: setTranslator, arguments: ['@translator'] }
 
-  prestashop.module.demovieworderhooks.install.fixtures_installer:
-    class: PrestaShop\Module\DemoViewOrderHooks\Install\FixturesInstaller
+  prestashop.module.demovieworderhooks.presenter.order_link_presenter:
+    class: PrestaShop\Module\DemoViewOrderHooks\Presenter\OrderLinkPresenter
     arguments:
-      - '@doctrine.orm.entity_manager'
+      - '@router.default'

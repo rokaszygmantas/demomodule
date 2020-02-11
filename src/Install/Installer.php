@@ -87,21 +87,30 @@ class Installer
     {
         $queries = [
             'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'signature` (
-			  `id_signature` int(11) NOT NULL AUTO_INCREMENT,
-			  `id_order` int(11) NOT NULL,
-			  `filename` varchar(64) NOT NULL,
-			  PRIMARY KEY (`id_signature`),
-			  UNIQUE KEY (`id_order`)
-			) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
+              `id_signature` int(11) NOT NULL AUTO_INCREMENT,
+              `id_order` int(11) NOT NULL,
+              `filename` varchar(64) NOT NULL,
+              PRIMARY KEY (`id_signature`),
+              UNIQUE KEY (`id_order`)
+            ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
 
             'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'order_review` (
-			  `id_order_review` int(11) NOT NULL AUTO_INCREMENT,
-			  `id_order` int(11) NOT NULL,
-			  `score` int(11) NOT NULL,
-			  `comment` text DEFAULT NULL,
-			  PRIMARY KEY (`id_order_review`),
-			  UNIQUE KEY (`id_order`)
-			) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
+              `id_order_review` int(11) NOT NULL AUTO_INCREMENT,
+              `id_order` int(11) NOT NULL,
+              `score` int(11) NOT NULL,
+              `comment` text DEFAULT NULL,
+              PRIMARY KEY (`id_order_review`),
+              UNIQUE KEY (`id_order`)
+            ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
+
+            'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'package_location` (
+              `id_package_location` int(11) NOT NULL AUTO_INCREMENT,
+              `id_order` int(11) NOT NULL,
+              `location` varchar(255) NOT NULL,
+              `position` int(11) NOT NULL,
+              `date` datetime DEFAULT NULL,
+              PRIMARY KEY (`id_package_location`)
+            ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
         ];
 
         return $this->executeQueries($queries);
@@ -117,6 +126,7 @@ class Installer
         $queries = [
             'DROP TABLE IF EXISTS `'._DB_PREFIX_.'signature`',
             'DROP TABLE IF EXISTS `'._DB_PREFIX_.'order_review`',
+            'DROP TABLE IF EXISTS `'._DB_PREFIX_.'package_location`',
         ];
 
         return $this->executeQueries($queries);

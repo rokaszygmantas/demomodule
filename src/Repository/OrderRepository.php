@@ -29,12 +29,24 @@ declare(strict_types=1);
 namespace PrestaShop\Module\DemoViewOrderHooks\Repository;
 
 use DateTimeImmutable;
+use Db;
+use DbQuery;
 use Order as PrestaShopOrder;
 use PrestaShop\Module\DemoViewOrderHooks\Collection\Orders;
 use PrestaShop\Module\DemoViewOrderHooks\DTO\Order;
 
 class OrderRepository
 {
+    /**
+     * @var Db
+     */
+    private $db;
+
+    public function __construct()
+    {
+        $this->db = Db::getInstance();
+    }
+
     /**
      * Get all orders that a customer has placed.
      */
@@ -57,5 +69,35 @@ class OrderRepository
         }
 
         return $ordersCollection;
+    }
+
+    public function getNextOrderId(int $orderId): ?int
+    {
+        $query = new DbQuery();
+        $query
+            ->select('id_order')
+            ->from('orders')
+            ->where('id_order > '.$orderId)
+            ->orderBy('id_order ASC')
+        ;
+
+        $result = $this->db->getValue($query);
+
+        return $result ? (int) $result : null;
+    }
+
+    public function getPreviousOrderId(int $orderId): ?int
+    {
+        $query = new DbQuery();
+        $query
+            ->select('id_order')
+            ->from('orders')
+            ->where('id_order < '.$orderId)
+            ->orderBy('id_order DESC')
+        ;
+
+        $result = $this->db->getValue($query);
+
+        return $result ? (int) $result : null;
     }
 }

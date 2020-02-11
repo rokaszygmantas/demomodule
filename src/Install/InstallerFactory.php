@@ -26,17 +26,16 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
+namespace PrestaShop\Module\DemoViewOrderHooks\Install;
 
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
+use Db;
 
-class OrderReviewPresenter
+class InstallerFactory
 {
-    public function present(OrderReview $orderReview): array
+    public static function create(): Installer
     {
-        return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
-        ];
+        return new Installer(
+            new FixturesInstaller(Db::getInstance())
+        );
     }
 }

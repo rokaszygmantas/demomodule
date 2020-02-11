@@ -1,5 +1,4 @@
-<?php
-/**
+{#**
  * 2007-2020 PrestaShop SA and Contributors
  *
  * NOTICE OF LICENSE
@@ -22,21 +21,21 @@
  * @copyright 2007-2020 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
- */
+ *#}
 
-declare(strict_types=1);
+{% trans_default_domain 'Module.Demovieworderhooks.Admin' %}
 
-namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
-
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
-
-class OrderReviewPresenter
-{
-    public function present(OrderReview $orderReview): array
-    {
-        return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
-        ];
-    }
-}
+<li class="nav-item">
+  <a class="nav-link"
+     id="trackingTab"
+     data-toggle="tab"
+     href="#trackingTabContent"
+     role="tab"
+     aria-controls="trackingTabContent"
+     aria-expanded="true"
+     aria-selected="false"
+  >
+    <i class="material-icons">pin_drop</i>
+    {{ 'Package tracking'|trans }}
+  </a>
+</li>

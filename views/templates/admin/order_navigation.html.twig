@@ -1,5 +1,4 @@
-<?php
-/**
+{#**
  * 2007-2020 PrestaShop SA and Contributors
  *
  * NOTICE OF LICENSE
@@ -22,21 +21,26 @@
  * @copyright 2007-2020 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
- */
+ *#}
 
-declare(strict_types=1);
+{% trans_default_domain 'Module.Demovieworderhooks.Admin' %}
 
-namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
+<div class="row mb-3">
+  <div class="col text-left">
+    {% if previousOrder.enabled %}
+      <a href="{{ previousOrder.href }}" class="btn btn-primary">
+        {{ 'Previous'|trans }} ({{ previousOrder.text }})
+        <span class="material-icons">arrow_back</span>
+      </a>
+    {% endif %}
+  </div>
 
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
-
-class OrderReviewPresenter
-{
-    public function present(OrderReview $orderReview): array
-    {
-        return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
-        ];
-    }
-}
+  <div class="col text-right">
+    {% if nextOrder.enabled %}
+      <a href="{{ nextOrder.href }}" class="btn btn-primary">
+        {{ 'Next'|trans }} ({{ nextOrder.text }})
+        <span class="material-icons">arrow_forward</span>
+      </a>
+    {% endif %}
+  </div>
+</div>

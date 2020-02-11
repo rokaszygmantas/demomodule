@@ -26,17 +26,11 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
+namespace PrestaShop\Module\DemoViewOrderHooks\Repository;
 
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
+use Doctrine\ORM\EntityRepository;
 
-class OrderReviewPresenter
+class PackageLocationRepository extends EntityRepository
 {
-    public function present(OrderReview $orderReview): array
-    {
-        return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
-        ];
-    }
 }
+

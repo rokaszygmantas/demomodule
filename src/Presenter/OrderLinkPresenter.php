@@ -28,15 +28,29 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\DemoViewOrderHooks\Presenter;
 
-use PrestaShop\Module\DemoViewOrderHooks\Entity\OrderReview;
+use Order;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class OrderReviewPresenter
+class OrderLinkPresenter
 {
-    public function present(OrderReview $orderReview): array
+    /**
+     * @var UrlGeneratorInterface
+     */
+    private $urlGenerator;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator)
     {
+        $this->urlGenerator = $urlGenerator;
+    }
+
+    public function present(?int $orderId): array
+    {
+        $order = new Order($orderId);
+
         return [
-            'comment' => $orderReview->getComment(),
-            'score' => $orderReview->getScore(),
+            'href' => $orderId ? $this->urlGenerator->generate('admin_orders_view', ['orderId' => $orderId]) : null,
+            'enabled' => $orderId !== null,
+            'text' => $order->reference,
         ];
     }
 }
