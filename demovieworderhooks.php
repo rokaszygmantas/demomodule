@@ -37,6 +37,10 @@ use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderReviewRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\PackageLocationRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class DemoViewOrderHooks extends Module
 {
     public function __construct()
@@ -44,10 +48,12 @@ class DemoViewOrderHooks extends Module
         $this->name = 'demovieworderhooks';
         $this->author = 'PrestaShop';
         $this->version = '1.0.0';
-        $this->displayName = 'Demonstration of new hooks in PrestaShop 1.7.7 order view page';
         $this->ps_versions_compliancy = ['min' => '1.7.7.0', 'max' => _PS_VERSION_];
 
         parent::__construct();
+
+        $this->displayName = $this->l('Demo view order hooks');
+        $this->description = $this->l('Demonstration of new hooks in PrestaShop 1.7.7 order view page');
     }
 
     public function install()
