@@ -36,6 +36,7 @@ use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\OrderReviewRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\PackageLocationRepository;
 use PrestaShop\Module\DemoViewOrderHooks\Repository\SignatureRepository;
+use PrestaShop\Module\SignatureHook\Collection\Orders;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -43,6 +44,8 @@ if (!defined('_PS_VERSION_')) {
 
 class DemoViewOrderHooks extends Module
 {
+    private const DELIVERED_ORDER_STATE_ID = 5;
+
     public function __construct()
     {
         $this->name = 'demovieworderhooks';
@@ -127,8 +130,29 @@ class DemoViewOrderHooks extends Module
 
     public function hookDisplayAdminOrderMain(array $params)
     {
-        // ERP integration
-        return 'displayAdminOrderMain';
+        /** @var OrderRepository $orderRepository */
+        $orderRepository = $this->get('prestashop.module.demovieworderhooks.repository.order_repository');
+        /** @var OrdersPresenter $ordersPresenter */
+        $ordersPresenter = $this->get('prestashop.module.demovieworderhooks.presenter.orders_presenter');
+
+        $order = new Order($params['id_order']);
+        /** @var Orders $customerOrdersCollection */
+        $customerOrdersCollection = $orderRepository->getCustomerOrders((int)$order->id_customer, [$order->id]);
+        $onlyDeliveredOrders = $customerOrdersCollection->filter(
+            function (\PrestaShop\Module\DemoViewOrderHooks\DTO\Order $order) {
+                return $order->getOrderStateId() === self::DELIVERED_ORDER_STATE_ID;
+            }
+        );
+
+
+        return $this->render($this->getModuleTemplatePath() . 'customer_delivered_orders.html.twig', [
+            'currentOrderId' => (int) $params['id_order'],
+            'orders' => $ordersPresenter->present(
+            // Get all customer orders wit status 'Delivered' except currently viewed order
+                $onlyDeliveredOrders,
+                (int) $this->context->language->id
+            ),
+        ]);
     }
 
     /**
