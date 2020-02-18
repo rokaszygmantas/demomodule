@@ -13,5 +13,8 @@
       "psr-4": {
         "PrestaShop\\Module\\DemoViewOrderHooks\\": "src/"
       }
+    },
+    "require-dev": {
+        "prestashop/php-dev-tools": "^2.2"
     }
 }
